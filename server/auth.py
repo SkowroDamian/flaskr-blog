@@ -12,8 +12,10 @@ from server.db import get_db
 # to know where its defined, so __name__ is passed as the second argument. The url_prefix will be prepended to all the ulrs associated with the blueprint
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
+# When using a blueprint, the name of the blueprint is prepended to the name of the function, so the endpoint for the login function you wrote above is 'auth.login' because you added it to the 'auth' blueprint
 @bp.route('/register', methods=('GET', 'POST'))
 #bp.route associates the url with the register view function. when flesk recives a request to /auth.register it will call the register view and use the return value
+
 def register():
     if request.method == 'POST':
         username = request.form['username']
@@ -61,6 +63,7 @@ def login():
         if error is None:
             session.clear()
             session['user_id'] = user['id']
+            
             return redirect(url_for('index'))
         
         flash(error)
@@ -85,6 +88,7 @@ def logout():
 
 def login_required(view):
     @functools.wraps(view)
+    # this decorator returns a new view function that wpras the original view it's applied to. The new functions checks if a user is loaded and redirects to the login page otherwise. If a user is loaded dthe original view is calles and continues normally.
     def wrapped_view(**kwargs):
         if g.user is None:
             return redirect(url_for('auth.login'))
